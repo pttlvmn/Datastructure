@@ -1,0 +1,85 @@
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+
+using namespace std;
+
+inline void error(const char* message) {
+    printf("%s\n", message);
+    exit(1);
+
+}
+
+const int MAX_STACK_SIZE = 20;
+class OperandStack
+{
+    int top;
+    double data[MAX_STACK_SIZE];
+
+public:
+    OperandStack() { top = -1; }
+    ~OperandStack() {}
+    bool isEmpty() { return top == -1; }
+    bool isFull() { return top == MAX_STACK_SIZE - 1; }
+
+    void push(double e) {
+
+        if (isFull())error("스택 포화 에러");
+        data[++top] = e;
+
+
+    }
+    double pop() {
+        if (isEmpty())error("스택 공백 에러");
+        return data[top--];
+
+    }
+
+    double peek() {
+        if (isEmpty())error("스택 공백 에러");
+        return data[top];
+    }
+    void display() {
+        printf("[스택 항목의 수=%2d]==>", top + 1);
+        for (int i = 0; i <= top; i++)
+            printf("<%2d>", data[i]);
+        printf("\n");
+    }
+
+};
+
+double calcPostfixExpr(FILE* fp = stdin)
+{
+    char			c;
+    double			val;
+    OperandStack	st;
+
+    while ((c = getc(fp)) != '\n') {
+        if (c == '+' || c == '-' || c == '*' || c == '/') {
+            double val2 = st.pop();
+            double val1 = st.pop();
+            switch (c) {
+            case '+': st.push(val1 + val2); break;
+            case '-': st.push(val1 - val2); break;
+            case '*': st.push(val1 * val2); break;
+            case '/': st.push(val1 / val2); break;
+            }
+        }
+        else if (c >= '0' && c <= '9') {
+            ungetc(c, fp);
+            fscanf_s(fp, "%lf", &val);
+
+            st.push(val);
+        }
+    }
+    return (st.pop());
+}
+
+
+void main()
+{
+    printf("수식 입력 (Postfix)= ");
+    double res = calcPostfixExpr();
+    printf("계산 결과 => %f\n", res);
+}
+
