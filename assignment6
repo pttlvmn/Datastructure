@@ -1,0 +1,361 @@
+1. 클래스 설계
+
+노드 클래스를 단순하게 만들거나 노드 클레스에 가능한 많은 기능을 구현한다는 접근 방식이 있다. 
+전자는 노드 클래스를 단순하게 만드는 대신, 노드의 연결 관계를 포함한 노드 처리 연산들을 모두 리스트 클래스에서 구현한다.
+후자는 노드 클래스에 가능한 많은 기능을 구현하는 대신 리스트 클래스에서 이들을 사용함으로써 리스트 클래스의 복잡도를 줄일 수 있다.
+많은 연결리스트 코드를 짜본 것도 아니어서 아직 단정 짓긴 어렵지만, 
+후자의 노드 클래스에서 가능한 많은 기능을 구현하고 리스트 클래스에서 이들을 사용함으로써 리스트 클래스의 복잡도를 줄이는 방법으로 설계하는 것이 더 나은 방법같다.
+리스트 클래스를 짜기 전 노드 클래스를 만드는데, 노드 클래스가 간단할 수록 리스트 클래스에서 구현할 것들이 많아져 후자의 접근 방법보다 
+코드가 길어지고 복잡해질 것 같다고 생각했다.
+
+2. 교재 6장 연습문제 1&2번
+
+2-1: "단순 연결 리스트에 정수가 저장되어 있다. 단순 연결 리스트의 모든 데이터 값을 더한 합을 출력하는 프로그램을 작성하라."
+#include <iostream>
+
+using namespace std;
+
+ 
+
+class Node
+
+{
+
+private:
+
+        Node *link; 
+        int data; 
+
+public:
+
+        Node(int val = 0) :data(val), link(NULL)
+
+        {
+
+        }
+
+        int getData()
+
+        {
+
+               return data;
+
+        }
+
+        Node *getLink()
+
+        {
+
+               return link;
+
+        }
+
+        void setLink(Node *next)
+
+        {
+
+               link = next;
+
+        }
+
+        void display()
+
+        {
+
+               cout << "<" << data << "> ";
+
+        }
+
+        bool hasData(int val)
+
+        {
+
+               return data == val;
+
+        }
+
+ 
+
+        //자신의 다음에 새로운 노드 n을 삽입하는 함수
+
+        void insertNext(Node *n)
+
+        {
+
+               if (n != NULL)
+
+               {
+
+                       n->link = link;
+
+                       link = n;
+
+               }
+
+        }
+
+  
+
+        Node *removeNext()
+
+        {
+
+               Node *removed = link;
+
+               if (removed != NULL)
+
+                       link = removed->link;
+
+               return removed;
+
+        }
+
+};
+
+
+
+
+#include "listNode.h"
+
+class LinkedList
+
+{
+
+private:
+
+        Node org; //헤드 노드(헤드 포인터 아님)
+
+public:
+
+        LinkedList() :org(0)
+
+        {
+
+        }
+
+        ~LinkedList()
+
+        {
+
+               clear(); //소멸자
+
+        }
+
+        void clear()
+
+        {
+
+               while (!isEmpty())
+
+                       delete remove(0);
+
+        }
+
+        Node *getHead()
+
+        {
+
+               return org.getLink();
+
+        }
+
+        bool isEmpty()
+
+        {
+
+               return getHead() == NULL;
+
+        }
+
+ 
+
+      
+
+        Node *getEntry(int pos)
+
+        {
+
+               Node *n = &org;
+
+               for (int i = -1; i < pos; i++, n = n->getLink())
+
+                       if (n == NULL)
+
+                              break;
+
+               return n;
+
+        }
+
+       
+
+        void insert(int pos, Node *n)
+
+        {
+
+               Node *prev = getEntry(pos - 1);
+
+               if (prev != NULL)
+
+                       prev->insertNext(n);
+
+        }
+
+        Node *remove(int pos)
+
+        {
+
+               Node *prev = getEntry(pos - 1);
+
+               return prev->removeNext();
+
+        }
+
+
+        Node *find(int val)
+
+        {
+
+               for (Node *p = getHead(); p != NULL; p = p->getLink())
+
+                       if (p->hasData(val))
+
+                              return p;
+
+               return NULL;
+
+        }
+
+        //리스트의 어떤 위치에 항목 삽입
+
+        void replace(int pos, Node *n)
+
+        {
+
+               Node *prev = getEntry(pos - 1);
+
+               if (prev != NULL)
+
+               {
+
+                       delete prev->removeNext();
+
+                       prev->insertNext(n);
+
+               }
+
+        }
+
+
+        int size()
+
+        {
+
+               int count = 0;
+
+               for (Node *p = getHead(); p != NULL; p = p->getLink())
+
+                       count++;
+
+               return count;
+
+        }
+
+
+
+        void display()
+
+        {
+
+               cout << "[전체 항목 수 = " << size() << "] : ";
+
+               for (Node *p = getHead(); p != NULL; p = p->getLink())
+
+                       p->display();
+
+               cout << endl;
+
+        }
+
+
+        void sum()
+
+        {
+
+               int Add = 0;
+
+               cout << "[전체 항목의 합 = ";
+
+               for (Node *p = getHead(); p != NULL; p = p->getLink())
+
+                       Add += p->getData();
+
+               cout << Add << "]" << endl;
+
+        }
+
+
+        int count(int val)
+
+        {
+
+               int cnt = 0;
+
+               for (Node *p = getHead(); p != NULL; p = p->getLink())
+
+                       if (p->hasData(val))
+
+                              cnt++;
+
+               return cnt;
+
+        }
+
+};
+
+
+2-2: "단순 연결 리스트에서 특정한 데이터 값을 갖는 노드의 개수를 계산하는 함수를 작성하라."
+
+#include "LinkedList.h"
+
+int main(void)
+
+{
+
+        LinkedList list;
+
+        list.insert(0, new Node(10));
+
+        list.insert(0, new Node(20));
+
+        list.insert(1, new Node(30));
+
+        list.insert(list.size(), new Node(40));
+
+        list.insert(2, new Node(50));
+
+        list.display();
+
+        list.sum();
+
+        cout << "리스트 내 50을 갖고 있는 노드의 수: " << list.count(50) << endl;
+
+        list.remove(2);
+
+        list.remove(list.size() - 1);
+
+        list.remove(0);
+
+        list.replace(1, new Node(90));
+
+        list.display();
+
+        cout << "리스트 내 50을 갖고 있는 노드의 수: " << list.count(50) << endl;
+
+        list.clear();
+
+        list.display();
+
+        return 0;
+
+}
